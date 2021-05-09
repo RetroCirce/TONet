@@ -48,7 +48,7 @@ class TONet(pl.LightningModule):
             self.sp_dim = self.config.freq_bin
             self.linear_dim = self.attn_dim
         elif self.mode == "all":
-            self.sp_dim = self.config.freq_bin
+            self.sp_dim = self.config.freq_bin * 2
             self.linear_dim = self.attn_dim
         # Network Architecture 
         if self.mode == "spl":
@@ -183,27 +183,27 @@ class TONet(pl.LightningModule):
             output_r = output_r[:,:, 1:,:]
             feature_agg = torch.cat((output_l, output_r), dim = 2)
             feature_agg = feature_agg.squeeze(dim = 1)
-            feature_agg = self.tcfp_linear(feature_agg) # [bs, 360, 128]
+            feature_agg_mi = self.tcfp_linear(feature_agg) # [bs, 360, 128]
             bm_agg = torch.cat((bm_l, bm_r), dim = 2)
             bm_agg = bm_agg.squeeze(dim = 1)
-            bm_agg = self.tcfp_bm(bm_agg)
-            # bm_agg = bm_agg.permute(0,2,1)
+            bm_agg_mi = self.tcfp_bm(bm_agg)
+            bm_agg = bm_agg.permute(0,2,1)
             tone_feature = feature_agg.permute(0,2,1).contiguous()
             octave_feature = feature_agg.permute(0,2,1).contiguous()
             tone_prob = self.tone_decoder(tone_feature)
             octave_prob = self.octave_decoder(octave_feature)
-            # tone_bm = self.tone_bm(bm_agg)
-            # octave_bm = self.octave_bm(bm_agg)
-            # tone_bm = tone_bm.permute(0,2,1)
-            # octave_bm = octave_bm.permute(0,2,1)
-            tone_bm = bm_agg
-            octave_bm = bm_agg
+
+            tone_bm = self.tone_bm(bm_agg)
+            octave_bm = self.octave_bm(bm_agg)
+            tone_bm = tone_bm.permute(0,2,1)
+            octave_bm = octave_bm.permute(0,2,1)
+
             tone_prob = torch.cat((tone_prob, tone_bm), dim = 1)
             octave_prob = torch.cat((octave_prob, octave_bm), dim = 1)
             
-            final_feature = torch.cat((tone_prob, octave_prob, feature_agg, bm_agg), dim = 1)
+            final_feature = torch.cat((tone_prob, octave_prob, feature_agg_mi, bm_agg_mi), dim = 1)
             final_feature = self.final_linear(final_feature)
-            final_feature = torch.cat((bm_agg, final_feature), dim=1)
+            final_feature = torch.cat((bm_agg_mi, final_feature), dim=1)
             final_feature = nn.Softmax(dim = 1)(final_feature)
             tone_prob = nn.Softmax(dim = 1)(tone_prob)
             octave_prob = nn.Softmax(dim = 1)(octave_prob)
@@ -470,15 +470,19 @@ class TONet(pl.LightningModule):
         if self.mode == "single" or self.mode == "tcfp":
             for i, dataset_d in enumerate(validation_step_outputs):  
                 metric = np.array([0.,0.,0.,0.,0.,0.])  
+                preds = []
+                gds = []
                 for d in dataset_d:
                     pred, gd, rl = d
                     pred = np.argmax(pred, axis = 1)
-                    pred = np.concatenate(pred, axis = 0)[:rl]
+                    pred = np.concatenate(pred, axis = 0)
                     pred = self.centf[pred]
-                    gd = np.concatenate(gd, axis = 0)[:rl]
-                    temp_metrics = melody_eval(pred, gd)
-                    metric += temp_metrics
-                metric /= len(dataset_d)
+                    gd = np.concatenate(gd, axis = 0)
+                    preds.append(pred)
+                    gds.append(gd)
+                preds = np.concatenate(preds, axis = 0)
+                gds = np.concatenate(gds, axis = 0)
+                metric = melody_eval(preds, gds)
                 self.print("\n")
                 self.print("Dataset ", i, " OA:", metric[-1])
                 if metric[-1] > self.max_metric[i, -1]:
