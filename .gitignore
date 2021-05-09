@@ -1,0 +1,7 @@
+data/
+__pycache__/
+.ipynb_checkpoints/
+lightning_logs/
+mdoel/__pycache__/
+knut
+wav.zip
