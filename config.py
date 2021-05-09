@@ -8,12 +8,12 @@ This file contains all constants, hyperparameters, and settings for the model
 
 exp_name = "MSNet"
 # file path
-data_path = "/home/kechen/Research/ISMIR-2021-TONET/data"
-train_file = "/home/kechen/Research/ISMIR-2021-TONET/data/train_data.txt"
+data_path = "data"
+train_file = "data/train_data.txt"
 test_file = [
-    "/home/kechen/Research/ISMIR-2021-TONET/data/test_adc.txt",
-    "/home/kechen/Research/ISMIR-2021-TONET/data/test_mirex.txt",
-    "/home/kechen/Research/ISMIR-2021-TONET/data/test_melody.txt"
+    "data/test_adc.txt",
+    "data/test_mirex.txt",
+    "data/test_melody.txt"
 ]
     
 save_path = "/data/home/knutchen/melody_ext/model_backup"
@@ -30,7 +30,7 @@ octave_class = 8 # 6
 random_seed = 19961206
 max_epoch = 500
 freq_bin = 360
-ablation_mode = "all" # single, tcfp, spl, spat, all
+ablation_mode = "spl" # single, tcfp, spl, spat, all
 startfreq = 32
 stopfreq = 2050
 cfp_dir = "cfp_360_new"

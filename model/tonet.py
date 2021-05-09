@@ -537,9 +537,9 @@ class TONet(pl.LightningModule):
         def lr_foo(epoch):
             if epoch < 5:
                 # warm up lr
-                lr_scale = 0.5
+                lr_scale = 1.0
             else:
-                lr_scale = 0.5 * 0.98 ** (epoch - 5)
+                lr_scale = max(1.0 * 0.98 ** (epoch - 5), 0.2)
 
             return lr_scale
 
