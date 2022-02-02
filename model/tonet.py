@@ -325,6 +325,12 @@ class TONet(pl.LightningModule):
         return loss
     
 
+    def write_prediction(self, pred, filename):
+        time_frame = np.arange(len(pred)) * 0.01
+        with open(filename, "w") as f:
+            for i in range(len(time_frame)):
+                f.write(str(np.round(time_frame[i], 4)) + "\t" + str(pred[i]) + "\n")
+
 
     def validation_step(self, batch, batch_idx, dataset_idx):
         device_type = next(self.parameters()).device
@@ -419,6 +425,7 @@ class TONet(pl.LightningModule):
                     for j in range(len(self.max_metric[i])):
                         self.max_metric[i,j] = metric[j]
                         self.max_metric[i,j] = metric[j]
+                    torch.save(self.state_dict(), "model_backup/bestk_" + str(i) + ".ckpt")
                 self.print("Best ",i,":", self.max_metric[i])
         elif self.mode == "all" or self.mode == "spl" or self.mode == "spat":
             for i, dataset_d in enumerate(validation_step_outputs):    
@@ -442,21 +449,28 @@ class TONet(pl.LightningModule):
                     for j in range(len(self.max_metric[i])):
                         self.max_metric[i,j] = metric[j]
                         self.max_metric[i,j] = metric[j]
+                    torch.save(self.state_dict(), "model_backup/bestk_" + str(i) + ".ckpt")
                 self.print("Best ",i,":", self.max_metric[i])
     def test_step(self, batch, batch_idx, dataset_idx):
         return self.validation_step(batch, batch_idx, dataset_idx)
 
     def test_epoch_end(self, test_step_outputs):
-        self.validation_epoch_end(test_step_outputs)
+        for i, dataset_d in enumerate(test_step_outputs):  
+            for j, d in enumerate(dataset_d):
+                pred, _, rl = d
+                pred = np.argmax(pred, axis = 1)
+                pred = np.concatenate(pred, axis = 0)[:rl]
+                pred = self.centf[pred]
+                self.write_prediction(pred, "prediction/" + str(i) + "_" + str(j) + ".txt")
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.config.lr)
         def lr_foo(epoch):
             if epoch < 5:
                 # warm up lr
-                lr_scale = 1.0
+                lr_scale = 0.5
             else:
-                lr_scale = max(1.0 * 0.98 ** (epoch - 5), 0.2)
+                lr_scale = 0.5 * 0.98 ** (epoch - 5)
 
             return lr_scale
 
