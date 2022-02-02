@@ -1,0 +1,12 @@
+daisy1.npy
+daisy2.npy
+daisy3.npy
+daisy4.npy
+opera_fem2.npy
+opera_fem4.npy
+opera_male3.npy
+opera_male5.npy
+pop1.npy
+pop2.npy
+pop3.npy
+pop4.npy
