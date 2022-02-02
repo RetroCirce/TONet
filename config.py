@@ -7,7 +7,6 @@ This file contains all constants, hyperparameters, and settings for the model
 
 """
 
-
 exp_name = "FTANet"
 # file path
 model_type = "FTANet" # MCDNN, FTANet, MSNet, MLDRNet
