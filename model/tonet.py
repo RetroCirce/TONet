@@ -455,13 +455,14 @@ class TONet(pl.LightningModule):
         return self.validation_step(batch, batch_idx, dataset_idx)
 
     def test_epoch_end(self, test_step_outputs):
-        for i, dataset_d in enumerate(test_step_outputs):  
-            for j, d in enumerate(dataset_d):
-                pred, _, rl = d
-                pred = np.argmax(pred, axis = 1)
-                pred = np.concatenate(pred, axis = 0)[:rl]
-                pred = self.centf[pred]
-                self.write_prediction(pred, "prediction/" + str(i) + "_" + str(j) + ".txt")
+        self.validation_epoch_end(test_step_outputs)
+        # for i, dataset_d in enumerate(test_step_outputs):  
+        #     for j, d in enumerate(dataset_d):
+        #         pred, _, rl = d
+        #         pred = np.argmax(pred, axis = 1)
+        #         pred = np.concatenate(pred, axis = 0)[:rl]
+        #         pred = self.centf[pred]
+                # self.write_prediction(pred, "prediction/" + str(i) + "_" + str(j) + ".txt")
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.config.lr)
