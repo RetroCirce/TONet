@@ -20,7 +20,8 @@ test_file = [
 ]
     
 save_path = "model_backup"
-resume_checkpoint = "model_backup/TO-FTANet_adc_best.ckpt" # the model checkpoint
+resume_checkpoint = None 
+# "model_backup/TO-FTANet_adc_best.ckpt" # the model checkpoint
 
 # train config
 batch_size = 12
