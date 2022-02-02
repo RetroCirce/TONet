@@ -1,4 +1,11 @@
-# Tone-Octave Network core code
+"""
+Ke Chen knutchen@ucsd.edu
+
+Tone-Octave Network - model
+
+This file contains the TONet core code
+
+"""
 import os
 import numpy as np
 import torch
@@ -50,6 +57,7 @@ class TONet(pl.LightningModule):
         elif self.mode == "all":
             self.sp_dim = self.config.freq_bin * 2
             self.linear_dim = self.attn_dim
+
         # Network Architecture 
         if self.mode == "spl":
             self.tone_gru = nn.Linear(self.sp_dim, self.linear_dim)
@@ -207,18 +215,6 @@ class TONet(pl.LightningModule):
             final_feature = nn.Softmax(dim = 1)(final_feature)
             tone_prob = nn.Softmax(dim = 1)(tone_prob)
             octave_prob = nn.Softmax(dim = 1)(octave_prob)
-
-
-
-            # tone_prob = torch.cat((tone_prob, tone_bm), dim = 1)
-            # octave_prob = torch.cat((octave_prob, octave_bm), dim = 1)
-            # tone_prob = nn.Softmax(dim = 1)(tone_prob)
-            # octave_prob = nn.Softmax(dim = 1)(octave_prob)
-            # need
-            # tone_prob = torch.cat((tone_bm, tone_prob), dim = 1)
-            # octave_prob = torch.cat((octave_bm, octave_prob), dim = 1)
-            # tone_prob = nn.Softmax(dim = 1)(tone_prob)
-            # octave_prob = nn.Softmax(dim = 1)(octave_prob)
             return tone_prob, octave_prob, final_feature
         elif self.mode == "tcfp":
             _, output_l = self.l_model(x)
@@ -261,16 +257,7 @@ class TONet(pl.LightningModule):
             final_feature = nn.Softmax(dim = 1)(final_feature)
             tone_prob = nn.Softmax(dim = 1)(tone_prob)
             octave_prob = nn.Softmax(dim = 1)(octave_prob)
-            # need
-            # tone_prob = torch.cat((tone_bm, tone_prob), dim = 1)
-            # octave_prob = torch.cat((octave_bm, octave_prob), dim = 1)
-            # tone_prob = nn.Softmax(dim = 1)(tone_prob)
-            # octave_prob = nn.Softmax(dim = 1)(octave_prob)
             return tone_prob, octave_prob, final_feature
-
-
-
-
     """
     Args:
         batch: {
@@ -308,27 +295,6 @@ class TONet(pl.LightningModule):
             pred_map = torch.cat((tone_prob, octave_prob , final_prob), dim = 1)
             gd_map = torch.cat([tone_maps, octave_maps, gd_maps], dim = 1)
             loss = self.loss_func(pred_map, gd_map)
-            # loss = nn.NLLLoss()(tone_prob, tone_maps.view(-1)) + nn.NLLLoss()(octave_prob, octave_maps.view(-1))
-            
-            # octave_maps = torch.zeros((cfps.shape[0], self.config.octave_class + 1, cfps.shape[-1])).to(device_type)
-            # # prepare tone and octave 
-            # tone_maps = torch.zeros((cfps.shape[0], self.config.tone_class + 1, cfps.shape[-1])).to(device_type)
-            # octave_maps = torch.zeros((cfps.shape[0], self.config.octave_class + 1, cfps.shape[-1])).to(device_type)
-            # for i in range(len(gds)):
-            #     for j in range(gds.shape[-1]):
-            #         if gds[i,j] == 0:
-            #             tone_maps[i, 0, j] = 1.0
-            #             octave_maps[i, 0, j] = 1.0
-            #         else:
-            #             tone_maps[i, gds[i, j].long() % 60 + 1, j] = 1.0
-            #             octave_maps[i, gds[i, j].long() // 60 + 1, j] = 1.0
-            # # tone_maps = torch.argmax(tone_maps, dim = 1)
-            # # octave_maps = torch.argmax(octave_maps, dim = 1)
-            # tone_prob, octave_prob = self(cfps, tcfps)
-            # # tone_prob = tone_prob.permute(0,2,1).contiguous().view(-1, tone_prob.shape[-2])
-            # # octave_prob = octave_prob.permute(0,2,1).contiguous().view(-1, octave_prob.shape[-2])
-            # loss = 0.63 * self.loss_func(tone_prob, tone_maps) + 0.37 * self.loss_func(octave_prob, octave_maps)
-            # # loss = nn.BCELoss()(tone_prob, tone_maps) + nn.NLLLoss()(octave_prob, octave_maps.view(-1))
             self.log('loss', loss, on_step=True, on_epoch=True, prog_bar=True, logger=True)
         elif self.mode == "tcfp":
             gd_maps = torch.zeros((cfps.shape[0], cfps.shape[-2] + 1, cfps.shape[-1])).to( device_type)
@@ -355,24 +321,6 @@ class TONet(pl.LightningModule):
             pred_map = torch.cat((tone_prob, octave_prob , final_prob), dim = 1)
             gd_map = torch.cat([tone_maps, octave_maps, gd_maps], dim = 1)
             loss = self.loss_func(pred_map, gd_map)
-            # prepare tone and octave 
-            # tone_maps = torch.zeros((cfps.shape[0], self.config.tone_class + 1, cfps.shape[-1])).to(device_type)
-            # octave_maps = torch.zeros((cfps.shape[0], self.config.octave_class + 1, cfps.shape[-1])).to(device_type)
-            # for i in range(len(gds)):
-            #     for j in range(gds.shape[-1]):
-            #         if gds[i,j] == 0:
-            #             tone_maps[i, 0, j] = 1.0
-            #             octave_maps[i, 0, j] = 1.0
-            #         else:
-            #             tone_maps[i, gds[i, j].long() % 60 + 1, j] = 1.0
-            #             octave_maps[i, gds[i, j].long() // 60 + 1, j] = 1.0
-            # # tone_maps = torch.argmax(tone_maps, dim = 1)
-            # # octave_maps = torch.argmax(octave_maps, dim = 1)
-            # tone_prob, octave_prob = self(cfps)
-            # # tone_prob = tone_prob.permute(0,2,1).contiguous().view(-1, tone_prob.shape[-2])
-            # # octave_prob = octave_prob.permute(0,2,1).contiguous().view(-1, octave_prob.shape[-2])
-            # loss = 0.63 * self.loss_func(tone_prob, tone_maps) + 0.37 * self.loss_func(octave_prob, octave_maps)
-            # loss = nn.BCELoss()(tone_prob, tone_maps) + nn.NLLLoss()(octave_prob, octave_maps.view(-1))
             self.log('loss', loss, on_step=True, on_epoch=True, prog_bar=True, logger=True)
         return loss
     
@@ -408,18 +356,11 @@ class TONet(pl.LightningModule):
                 temp_cfp = torch.from_numpy(cfps[i:i + mini_batch]).to(device_type)
                 temp_tcfp = torch.from_numpy(tcfps[i:i + mini_batch]).to(device_type)
                 _, _, temp_output = self(temp_cfp, temp_tcfp)
-                # temp_tone = temp_tone.detach().cpu().numpy()
-                # temp_octave = temp_octave.detach().cpu().numpy()
                 temp_output = temp_output.detach().cpu().numpy()
-                # output_tone.append(temp_tone)
-                # output_octave.append(temp_octave)
                 output.append(temp_output)
-            # output_tone = np.concatenate(output_tone,axis = 0)
-            # output_octave = np.concatenate(output_octave,axis = 0)
             output = np.concatenate(output,axis = 0)
             return [
-                # output_tone,
-                # output_octave, 
+
                 output,
                 gds, 
                 lens
@@ -446,27 +387,16 @@ class TONet(pl.LightningModule):
             for i in range(0, len(cfps), mini_batch):
                 temp_cfp = torch.from_numpy(cfps[i:i + mini_batch]).to(device_type)
                 _,_ , temp_output = self(temp_cfp)
-                # temp_tone = temp_tone.detach().cpu().numpy()
-                # temp_octave = temp_octave.detach().cpu().numpy()
                 temp_output = temp_output.detach().cpu().numpy()
-                # output_tone.append(temp_tone)
-                # output_octave.append(temp_octave)
                 output.append(temp_output)
-            # output_tone = np.concatenate(output_tone,axis = 0)
-            # output_octave = np.concatenate(output_octave,axis = 0)
             output = np.concatenate(output,axis = 0)
             return [
-                # output_tone,
-                # output_octave, 
                 output,
                 gds, 
                 lens
             ]
 
-
-
     def validation_epoch_end(self, validation_step_outputs):
-        
         if self.mode == "single" or self.mode == "tcfp":
             for i, dataset_d in enumerate(validation_step_outputs):  
                 metric = np.array([0.,0.,0.,0.,0.,0.])  
@@ -496,24 +426,10 @@ class TONet(pl.LightningModule):
                 preds = []
                 gds = []
                 for d in dataset_d:
-                    # pred_tone, pred_octave, pred, gd, rl = d
                     pred, gd, rl = d
                     pred = np.argmax(pred, axis = 1)
                     pred = np.concatenate(pred, axis = 0)
                     pred = self.centf[pred]
-
-                    # pred_tone = np.argmax(pred_tone, axis = 1)
-                    # pred_octave = np.argmax(pred_octave, axis = 1)
-                    # pred_tone = np.concatenate(pred_tone, axis = 0)
-                    # pred_octave = np.concatenate(pred_octave, axis = 0)
-                    # from pure pitch estimation
-                    # pred = np.array([tofreq(pred_tone[k], pred_octave[k]) for k in range(len(pred_tone))])
-                    # pred = [
-                    #     0 if (pred_tone[k] == 0 or pred_octave[k] == 0) else pred_tone[k] - 1 + (pred_octave[k] - 1) * self.config.octave_res 
-                    #     for k in range(len(pred_octave))
-                    # ][:rl]
-                    # self.print(pred_octave[:100])
-                    # pred = self.centf[pred]
                     gd = np.concatenate(gd, axis = 0)
                     preds.append(pred)
                     gds.append(gd)
@@ -527,9 +443,6 @@ class TONet(pl.LightningModule):
                         self.max_metric[i,j] = metric[j]
                         self.max_metric[i,j] = metric[j]
                 self.print("Best ",i,":", self.max_metric[i])
-
-        
-
     def test_step(self, batch, batch_idx, dataset_idx):
         return self.validation_step(batch, batch_idx, dataset_idx)
 
@@ -548,35 +461,10 @@ class TONet(pl.LightningModule):
             return lr_scale
 
         if self.mode == "single" or self.mode == "tcfp":
-            # scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, 200)
             return optimizer
-            # ], [scheduler]
         elif self.mode == "all" or self.mode == "spl" or self.mode == "spat":
             scheduler = torch.optim.lr_scheduler.LambdaLR(
                 optimizer,
                 lr_lambda=lr_foo
             )
             return [optimizer], [scheduler]
-        # 
-        # return [optimizer], [scheduler]
-
-# if False:
-#             for i, dataset_d in enumerate(validation_step_outputs):
-#                 metric = np.array([0.,0.,0.,0.,0.])
-#                 for d in dataset_d:
-#                     pred, gd, rl = d
-#                     pred = np.argmax(pred, axis = 1)
-#                     pred = np.concatenate(pred, axis = 0)[:rl]
-#                     pred = self.centf[pred]
-#                     gd = np.concatenate(gd, axis = 0)[:rl]
-#                     temp_metrics = melody_eval(pred, gd)
-#                     metric += temp_metrics
-#                 metric /= len(dataset_d)
-#                 self.print("\n")
-#                 self.print("Dataset ", i, ":", metric)
-#                 for j in range(len(self.max_metric[i])):
-#                     if j == 1:
-#                         self.max_metric[i,j] = min(self.max_metric[i,j], metric[j])
-#                     else:
-#                         self.max_metric[i,j] = max(self.max_metric[i,j], metric[j])
-#                 self.print("Best ",i,":", self.max_metric[i])

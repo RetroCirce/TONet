@@ -1,4 +1,11 @@
-# Dataset, Dataloader in TONet
+"""
+Ke Chen knutchen@ucsd.edu
+
+Tone-Octave Network - data_generator file
+
+This file contains the dataset and data generator classes
+
+"""
 import os
 import torch
 import numpy as np

@@ -1,3 +1,11 @@
+"""
+Ke Chen knutchen@ucsd.edu
+
+Tone-Octave Network - main file
+
+This file contains the main script
+
+"""
 import os
 import random
 import numpy as np
@@ -46,14 +54,19 @@ def train():
     ]
     loss_func = nn.BCELoss()
 
-    me_model = MCDNN()
-    me_model_r = MCDNN()
-    # me_model = MLDRnet()
-    # me_model_r = MLDRnet()
-    # me_model = FTAnet(freq_bin = config.freq_bin, time_segment=config.seg_frame)
-    # me_model_r = FTAnet(freq_bin = config.freq_bin, time_segment=config.seg_frame)
-    # me_model = MSnet()
-    # me_model_r = MSnet()
+    if config.model_type == "MCDNN":
+        me_model = MCDNN()
+        me_model_r = MCDNN()
+    elif config.model_type == "MLDRNet":
+        me_model = MLDRnet()
+        me_model_r = MLDRnet()
+    elif config.model_type == "FTANet":
+        me_model = FTAnet(freq_bin = config.freq_bin, time_segment=config.seg_frame)
+        me_model_r = FTAnet(freq_bin = config.freq_bin, time_segment=config.seg_frame)
+    else: # MSNet
+        me_model = MSnet()
+        me_model_r = MSnet()
+
     if config.ablation_mode == "single" or config.ablation_mode == "spl" or config.ablation_mode == "spat":
         me_model_r = None 
     model = TONet(
@@ -78,7 +91,59 @@ def train():
     
 
 def test():
-    pass
+    test_datasets = [
+        TONetTestDataset(
+            data_list = d,
+            config = config
+        ) for d in config.test_file
+    ]
+    test_dataloaders = [
+        DataLoader(
+            dataset = d,
+            shuffle = False,
+            batch_size = 1,
+            collate_fn=tonpy_fn
+        ) for d in test_datasets
+    ]
+    loss_func = nn.BCELoss()
+
+    if config.model_type == "MCDNN":
+        me_model = MCDNN()
+        me_model_r = MCDNN()
+    elif config.model_type == "MLDRNet":
+        me_model = MLDRnet()
+        me_model_r = MLDRnet()
+    elif config.model_type == "FTANet":
+        me_model = FTAnet(freq_bin = config.freq_bin, time_segment=config.seg_frame)
+        me_model_r = FTAnet(freq_bin = config.freq_bin, time_segment=config.seg_frame)
+    else: # MSNet
+        me_model = MSnet()
+        me_model_r = MSnet()
+
+    if config.ablation_mode == "single" or config.ablation_mode == "spl" or config.ablation_mode == "spat":
+        me_model_r = None 
+    model = TONet(
+        l_model = me_model,
+        r_model = me_model_r,
+        config = config,
+        loss_func = loss_func,
+        mode = config.ablation_mode
+    )
+    trainer = pl.Trainer(
+        deterministic = True,
+        gpus = 1,
+        checkpoint_callback = False,
+        max_epochs = config.max_epoch,
+        auto_lr_find = True,
+        sync_batchnorm=True,
+        # check_val_every_n_epoch = 1,
+        val_check_interval = 0.25,
+    )
+    # load the checkpoint
+    ckpt = torch.load(config.resume_checkpoint, map_location="cpu")
+    model.load_state_dict(ckpt)
+    
+    trainer.test(model, test_dataloaders)
 
 
 if __name__ == "__main__":
@@ -93,14 +158,3 @@ if __name__ == "__main__":
     elif args.mode == "test":
         test()
 
-
-
-"""
-ADC
-
-MIREX
-83.44 8.82 76.79 76.97 81.97
-
-MELODY
-60.07 11.85 51.66 52.79 69.01
-"""

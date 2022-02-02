@@ -1,5 +1,11 @@
-# TONET util.py
+"""
+Ke Chen knutchen@ucsd.edu
 
+Tone-Octave Network - utils file
+
+This file contains useful common methods
+
+"""
 import os
 import numpy as np
 import torch

@@ -1,4 +1,6 @@
 """
+Ke Chen knutchen@ucsd.edu
+
 Tone-Octave Network - config file
 
 This file contains all constants, hyperparameters, and settings for the model
@@ -6,8 +8,9 @@ This file contains all constants, hyperparameters, and settings for the model
 """
 
 
-exp_name = "MSNet"
+exp_name = "FTANet"
 # file path
+model_type = "FTANet" # MCDNN, FTANet, MSNet, MLDRNet
 data_path = "data"
 train_file = "data/train_data.txt"
 test_file = [
@@ -16,11 +19,11 @@ test_file = [
     "data/test_melody.txt"
 ]
     
-save_path = "/data/home/knutchen/melody_ext/model_backup"
-
+save_path = "model_backup"
+resume_checkpoint = "model_backup/TO-FTANet_adc_best.ckpt" # the model checkpoint
 
 # train config
-batch_size = 16
+batch_size = 12
 lr = 1e-4
 epochs = 1000
 n_workers = 4
@@ -30,7 +33,14 @@ octave_class = 8 # 6
 random_seed = 19961206
 max_epoch = 500
 freq_bin = 360
-ablation_mode = "spl" # single, tcfp, spl, spat, all
+'''
+single: the original network
+tcfp: with TCFP but without tone-octave fusion
+spl: with tone-octave fustion in linear layer but without tcfp
+spat: with tone-octave fusion in attention layer
+all: the full tone-octave network
+'''
+ablation_mode = "all" # single, tcfp, spl, spat, all
 startfreq = 32
 stopfreq = 2050
 cfp_dir = "cfp_360_new"
