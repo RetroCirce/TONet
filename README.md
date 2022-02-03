@@ -2,7 +2,7 @@
 
 ## Introduction
 
-The official implementation of "TONet: Tone-Octave Network for Singing Melody Extraction  from Polyphonic Music", in ICASSP 2022
+The official implementation of "[TONet: Tone-Octave Network for Singing Melody Extraction  from Polyphonic Music](https://arxiv.org/abs/2202.00951)", in ICASSP 2022
 
 We propose TONet, a plug-and-play model that improves both tone and octave perceptions by leveraging a novel input representation and a novel network architecture. Any CFP-input-based Model can be settled in TONet and lead to possible better performance.
 
