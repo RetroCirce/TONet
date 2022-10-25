@@ -90,7 +90,7 @@ class TONetTrainDataset(Dataset):
     def __getitem__(self,index):
         temp_dict = {
             "cfp": self.data_cfp[index].astype(np.float32),
-            "tcfp": self.data_tcfp[index].astype(np.float32),
+            "tcfp": np.zeros((1)), #self.data_tcfp[index].astype(np.float32),
             "gd": self.data_gd[index]
         }
         return temp_dict

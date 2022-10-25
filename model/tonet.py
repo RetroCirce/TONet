@@ -366,7 +366,6 @@ class TONet(pl.LightningModule):
                 output.append(temp_output)
             output = np.concatenate(output,axis = 0)
             return [
-
                 output,
                 gds, 
                 lens
@@ -476,6 +475,10 @@ class TONet(pl.LightningModule):
             return lr_scale
 
         if self.mode == "single" or self.mode == "tcfp":
+            # scheduler = torch.optim.lr_scheduler.LambdaLR(
+            #     optimizer,
+            #     lr_lambda=lr_foo
+            # )
             return optimizer
         elif self.mode == "all" or self.mode == "spl" or self.mode == "spat":
             scheduler = torch.optim.lr_scheduler.LambdaLR(

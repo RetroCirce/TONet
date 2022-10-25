@@ -7,10 +7,10 @@ This file contains all constants, hyperparameters, and settings for the model
 
 """
 
-exp_name = "FTANet"
+exp_name = "SpecTNT"
 # file path
-model_type = "FTANet" # MCDNN, FTANet, MSNet, MLDRNet
-data_path = "data"
+model_type = "SpecTNT" # MCDNN, FTANet, MSNet, MLDRNet
+data_path = "/home/la/kechen/Research/KE_SpecTNT/data"
 train_file = "data/train_data.txt"
 test_file = [
     "data/test_adc.txt",
@@ -18,12 +18,12 @@ test_file = [
     "data/test_melody.txt"
 ]
     
-save_path = "model_backup"
-resume_checkpoint = None 
+save_path = "/home/la/kechen/Research/KE_SpecTNT/model_backup"
+resume_checkpoint = '/home/la/kechen/Research/KE_SpecTNT/TONet/model_backup/bestk_2.ckpt'
 # "model_backup/TO-FTANet_adc_best.ckpt" # the model checkpoint
 
 # train config
-batch_size = 12
+batch_size = 16
 lr = 1e-4
 epochs = 1000
 n_workers = 4
@@ -40,7 +40,7 @@ spl: with tone-octave fustion in linear layer but without tcfp
 spat: with tone-octave fusion in attention layer
 all: the full tone-octave network
 '''
-ablation_mode = "all" # single, tcfp, spl, spat, all
+ablation_mode = "single" # single, tcfp, spl, spat, all
 startfreq = 32
 stopfreq = 2050
 cfp_dir = "cfp_360_new"
@@ -53,3 +53,10 @@ seg_dur = 1.28 # sec
 seg_frame = int(seg_dur * fs // hop)
 shift_dur = 1.28 # sec
 shift_frame = int(shift_dur * fs // hop)
+
+# spectnt config
+mel_bins = 360 # cfp bins not mel bins
+enable_tscam = True
+htsat_attn_heatmap = False
+loss_type = 'clip_bce'
+spectnt_ckpt = None # "/home/la/kechen/Research/KE_SpecTNT/ckpt/swin_base_patch4_window12_384_22k.pth"

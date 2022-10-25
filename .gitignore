@@ -4,3 +4,4 @@ lightning_logs/
 mdoel/__pycache__/
 knut
 wav.zip
+model_backup/
